@@ -8,6 +8,9 @@ local USERS = {
 local GITHUB_REPO = "https://github.com/revederedstonne64/ETBnux.git"
 local LOCAL_REPO_DIR = "ETBnux" -- Nom du dossier local pour cloner le dépôt
 
+-- Dossier des programmes à exécuter
+local PROGRAMS_DIR = "Exprogramme"
+
 -- Fonction pour afficher le logo
 local function displayLogo()
     term.clear()
@@ -53,6 +56,39 @@ local function cloneGitHubRepo()
     end
 end
 
+-- Fonction pour exécuter des programmes dans le dossier Exprogramme
+local function executePrograms()
+    if not fs.exists(PROGRAMS_DIR) then
+        print("Dossier '" .. PROGRAMS_DIR .. "' introuvable.")
+        return
+    end
+
+    local programs = fs.list(PROGRAMS_DIR)
+    if #programs == 0 then
+        print("Aucun programme trouvé dans '" .. PROGRAMS_DIR .. "'.")
+        return
+    end
+
+    print("Programmes disponibles dans '" .. PROGRAMS_DIR .. "' :")
+    for i, program in ipairs(programs) do
+        print(i .. ". " .. program)
+    end
+
+    write("\nEntrez le numéro du programme à exécuter : ")
+    local choice = tonumber(read())
+    if choice and programs[choice] then
+        local programPath = fs.combine(PROGRAMS_DIR, programs[choice])
+        if fs.isDir(programPath) then
+            print("Erreur : '" .. programPath .. "' est un dossier, pas un fichier exécutable.")
+        else
+            print("Exécution de " .. programs[choice] .. "...")
+            shell.run(programPath)
+        end
+    else
+        print("Choix invalide.")
+    end
+end
+
 -- Fonction pour afficher le menu supplémentaire
 local function showGitHubMenu(role)
     if role == "superadmin" then
@@ -84,9 +120,11 @@ local function showMenu(role)
     if role == "superadmin" then
         print("3. Gérer les comptes employés")
         print("4. Configuration système")
+        print("6. Exécuter un programme (Exprogramme)")
         print("8. Menu GitHub")
     elseif role == "admin" then
         print("3. Gérer les comptes employés")
+        print("6. Exécuter un programme (Exprogramme)")
     end
 
     print("5. Quitter")
@@ -119,6 +157,8 @@ local function main()
                     print("Gestion des comptes employés (option fictive).")
                 elseif choice == "4" and role == "superadmin" then
                     print("Configuration système (option fictive).")
+                elseif choice == "6" then
+                    executePrograms()
                 elseif choice == "8" and role == "superadmin" then
                     showGitHubMenu(role)
                 elseif choice == "5" then
